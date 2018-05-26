@@ -1,0 +1,11 @@
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    var socket = io('http://node11.codenvy.io:40403');
+    socket.on('connect', function () { console.log("connected") });
+    socket.on('tweet', function (data) { console.log(data); });
+    socket.on('disconnect', function () { });
+</script>
+
+<body>
+    YOO
+</body>
