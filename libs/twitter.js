@@ -1,5 +1,6 @@
 const Twitter = require("twitter");
 const sentiment = require("./sentiment.js");
+const frontend = require("./front-end.js");
 
 const GEOCODE_API_KEY = "AIzaSyCQ6ZDOw1lkkHz0Alz2v2cpKSEaG0CkUEQ";
 
@@ -24,7 +25,7 @@ module.exports = {
             console.log("Time " + event.created_at);
             console.log('Text ' + event.text);
             console.log("Location " + event.user.location);
-            geocode(event.user.location, data, sentiment.analysis);
+            geocode(event.user.location, data, token, sentiment.analysis);
 
         });
 
@@ -40,18 +41,18 @@ module.exports = {
             key: GEOCODE_API_KEY
         });
 
-        function geocode(address, tweet, callback) {
+        function geocode(address, tweet, token, callback) {
             googleMapsClient.geocode({
                 address: address
             }, function (err, response) {
                 if (!err) {
                     var location = response.json.results[0].geometry.location;
                     tweet.location = location;
-                    callback(tweet, frontend.emit);
+                    callback(tweet, token);
                 }
                 else {
                     tweet.location = '';
-                    callback(tweet, frontend.emit);
+                    callback(tweet, token);
 
                 }
             });
