@@ -3,7 +3,8 @@
 <meta charset="UTF-8">
 
 <head>
-        <script src="http://ec2-18-221-96-88.us-east-2.compute.amazonaws.com:3000/socket.io/socket.io.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    </script>
     <style>
         /* Always set the map height explicitly to define the size of the div
              * element that contains the map. */
@@ -17,8 +18,8 @@
         html,
         body {
             height: 100%;
-            margin: 300;
-            padding: 300;
+            margin: 0;
+            padding: 0;
         }
 
         #floating-panel {
@@ -45,14 +46,12 @@
             z-index: 5;
         }
     </style>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCQ6ZDOw1lkkHz0Alz2v2cpKSEaG0CkUEQ&libraries=visualization"></script>
 
 </head>
 
 <body>
     <div id="map"></div>
     <script>
-        console.log("SOMETHING");
 
         var map, heatmap;
 
@@ -62,39 +61,32 @@
                 center: { lat: 0, lng: 0 }
             });
         };
+        var liveTweets = new google.maps.MVCArray();
         heatmap = new google.maps.visualization.HeatmapLayer({
             data: liveTweets,
             radius: 25
         });
         heatmap.setMap(map);
-        let socket = io.connect('http://ec2-18-221-96-88.us-east-2.compute.amazonaws.com:3000/');
-        socket.on("connect", () => {
-            console.log("socket connected");
-        });
-        var liveTweets = new google.maps.MVCArray();
-        console.log("SOMETHING");
-        socket.on('tweet', function (data) {
-            console.log(data);
-            location = new google.maps.LatLng(data.location.lat, data.location.lng);
-            console.log(location);
-            liveTweets.push(location);
-            var image = "./img/marker.png";
-            var marker = new google.maps.Marker({
-                position: location,
-                map: map,
-                icon: image
+        var socket = io('http://localhost:3000');
+        io.on("connection", function (socket) {
+            socket.on('tweet', function (data) {
+                location = new google.maps.LatLng(data.location.lat, data.location.lng);
+                liveTweets.push(location);
+                var image = "./img/marker.png";
+                var marker = new google.maps.Marker({
+                    position: location,
+                    map: map,
+                    icon: image
+                });
+
+                setTimeout(function () {
+                    marker.setMap(null);
+                }, 600);
+
             });
-
-            setTimeout(function () {
-                marker.setMap(null);
-            }, 600);
-
-        });
-        
-    
+        };
 
     </script>
-    <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCQ6ZDOw1lkkHz0Alz2v2cpKSEaG0CkUEQ&libraries=visualization&callback=initMap">
-    </script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCQ6ZDOw1lkkHz0Alz2v2cpKSEaG0CkUEQ&libraries=visualization&callback=initMap"></script>
+
 </body>

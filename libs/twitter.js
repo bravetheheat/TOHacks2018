@@ -1,6 +1,6 @@
 const Twitter = require("twitter");
+const frontend = require("./front-end.js")
 const sentiment = require("./sentiment.js");
-const frontend = require("./front-end.js");
 
 const GEOCODE_API_KEY = "AIzaSyCQ6ZDOw1lkkHz0Alz2v2cpKSEaG0CkUEQ";
 
@@ -13,7 +13,9 @@ var client = new Twitter({
 
 module.exports = {
     scrape: function (keywords, token) {
-        var stream = client.stream('statuses/filter', { track: keywords });
+        var stream = client.stream('statuses/filter', {
+            track: keywords
+        });
         stream.on('data', function (event) {
             var data = {
                 name: event.user.screen_name,
@@ -21,10 +23,6 @@ module.exports = {
                 text: event.text,
                 location: event.user.location
             };
-            console.log('Name ' + event.user.screen_name);
-            console.log("Time " + event.created_at);
-            console.log('Text ' + event.text);
-            console.log("Location " + event.user.location);
             geocode(event.user.location, data, token, sentiment.analysis);
 
         });
@@ -48,11 +46,10 @@ module.exports = {
                 if (!err) {
                     var location = response.json.results[0].geometry.location;
                     tweet.location = location;
-                    callback(tweet, token);
-                }
-                else {
-                    tweet.location = '';
-                    callback(tweet, token);
+                    frontend.emit("tweet", tweet);
+                } else {
+                    tweet.location = null;
+                    frontend.emit("tweet", tweet);
 
                 }
             });
@@ -60,4 +57,4 @@ module.exports = {
 
 
     }
-}
+};

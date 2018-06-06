@@ -1,97 +1,59 @@
 <!doctype html>
-<html lang="en">
-<meta charset="UTF-8">
+<html>
 
 <head>
-    <script src="/socket.io/socket.io.js"></script>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.css' rel='stylesheet' />
     <style>
-        /* Always set the map height explicitly to define the size of the div
-             * element that contains the map. */
+        body {
+            margin: 0;
+            padding: 0;
+        }
 
         #map {
-            height: 100%;
-        }
-
-        /* Optional: Makes the sample page fill the window. */
-
-        html,
-        body {
-            height: 100%;
-            margin: 300;
-            padding: 300;
-        }
-
-        #floating-panel {
             position: absolute;
-            top: 10px;
-            left: 25%;
-            z-index: 5;
-            background-color: #fff;
-            padding: 5px;
-            border: 1px solid #999;
-            text-align: center;
-            font-family: 'Roboto', 'sans-serif';
-            line-height: 30px;
-            padding-left: 10px;
-        }
-
-        #floating-panel {
-            background-color: #fff;
-            border: 1px solid #999;
-            left: 25%;
-            padding: 5px;
-            position: absolute;
-            top: 10px;
-            z-index: 5;
+            top: 0;
+            bottom: 0;
+            width: 100%;
         }
     </style>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCQ6ZDOw1lkkHz0Alz2v2cpKSEaG0CkUEQ&libraries=visualization"></script>
-
 </head>
 
 <body>
-    <div id="map"></div>
+    <div id='map'></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
     <script>
-        console.log("SOMETHING");
-
-        var map, heatmap;
-
-        function initMap() {
-            map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 2,
-                center: { lat: 0, lng: 0 }
-            });
-        };
-        heatmap = new google.maps.visualization.HeatmapLayer({
-            data: liveTweets,
-            radius: 25
+        var socket = io('http://localhost:3000');
+        socket.on("connect", (data) => {
+            console.log("connected!");
         });
-        heatmap.setMap(map);
-        var socket = io.connect('http://localhost:3000');
-        var liveTweets = new google.maps.MVCArray();
-        console.log("SOMETHING");
-        socket.on('tweet', function (data) {
+        socket.on('tweet', (data) => {
+            console.log("received");
             console.log(data);
-            location = new google.maps.LatLng(data.location.lat, data.location.lng);
-            console.log(location);
-            liveTweets.push(location);
-            var image = "./img/marker.png";
-            var marker = new google.maps.Marker({
-                position: location,
-                map: map,
-                icon: image
-            });
-
-            setTimeout(function () {
-                marker.setMap(null);
-            }, 600);
-
+            if (data.location != null) {
+                console.log(data.location)
+                newMarker(map, data.location);
+            };
         });
-    
+        socket.on("message", (data) => {
+            console.log("something!");
+        });
 
-    </script>
-    <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCQ6ZDOw1lkkHz0Alz2v2cpKSEaG0CkUEQ&libraries=visualization&callback=initMap">
-    </script>
+        mapboxgl.accessToken =
+            'pk.eyJ1IjoiYnJhdmV0aGVoZWF0IiwiYSI6ImNqaTNmMnAwYTByMjAzcW50amIwdzc2cHYifQ.nG6ileQvpSg3jXrWZfTfzQ';
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/satellite-streets-v9',
+            minZoom: 2
+        });
 
+
+
+        function newMarker(map, location) {
+            let marker = new mapboxgl.Marker()
+                .setLngLat(location)
+                .addTo(map);
+
+        }
+    </script>
 </body>

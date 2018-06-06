@@ -1,5 +1,4 @@
 require('dotenv').config()
-const frontend = require("./front-end.js");
 const WATSONUSER = "382ac5bd-bfb6-4f46-a111-51d2fa14105c";
 const PASSWORD = "kIF6D3Vv2Iha";
 
@@ -20,10 +19,12 @@ function analysisBreakdown(tweet, analysis) {
     return tweet
 }
 
-module.exports.analysis = analysis = function (tweetObject, token) {
+module.exports.analysis = analysis = function (tweetObject, token, callback) {
 
     var toneParams = {
-        'tone_input': { 'text': tweetObject.text },
+        'tone_input': {
+            'text': tweetObject.text
+        },
         'content_type': 'application/json'
     };
 
@@ -31,9 +32,8 @@ module.exports.analysis = analysis = function (tweetObject, token) {
         if (error) {
             console.log(error);
         } else {
-            console.log(analysis);
 
-            frontend.emit(analysisBreakdown(tweetObject, analysis),token);
+            callback(analysisBreakdown(tweetObject, analysis), token);
         }
     })
 }
